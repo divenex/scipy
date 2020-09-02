@@ -79,12 +79,6 @@ def lsq_linear(A, b, bounds=(-np.inf, np.inf), method='trf', tol=1e-10,
               `tol`.
             * ``method='bvls'`` terminates if Karush-Kuhn-Tucker conditions
               are satisfied within `tol` tolerance.
-              
-    rcond : float, optional
-        Cut-off ratio for small singular values of `A`. For the purposes of rank 
-        determination, singular values are treated as zero if they are smaller 
-        than rcond times the largest singular value of `A`. The default will use 
-        the machine precision times ``max(m, n)``. 
 
     lsq_solver : {None, 'exact', 'lsmr'}, optional
         Method of solving unbounded least-squares problems throughout
@@ -107,6 +101,11 @@ def lsq_linear(A, b, bounds=(-np.inf, np.inf), method='trf', tol=1e-10,
         Maximum number of iterations before termination. If None (default), it
         is set to 100 for ``method='trf'`` or to the number of variables for
         ``method='bvls'`` (not counting iterations for 'bvls' initialization).
+    rcond : float, optional
+        Cut-off ratio for small singular values of `A`. For rank determination,
+        singular values are treated as zero if they are smaller than `rcond`
+        times the largest singular value of `A`. The default uses the machine
+        precision times `max(m, n)`.
     verbose : {0, 1, 2}, optional
         Level of algorithm's verbosity:
 
@@ -232,7 +231,7 @@ def lsq_linear(A, b, bounds=(-np.inf, np.inf), method='trf', tol=1e-10,
     if issparse(A):
         A = csr_matrix(A)
     elif not isinstance(A, LinearOperator):
-        A = np.atleast_2d(np.asarray(A))
+        A = np.atleast_2d(A)
 
     if method == 'bvls':
         if lsq_solver == 'lsmr':
@@ -285,7 +284,7 @@ def lsq_linear(A, b, bounds=(-np.inf, np.inf), method='trf', tol=1e-10,
         x_lsq = lsmr(A, b, atol=tol, btol=tol)[0]
 
     if in_bounds(x_lsq, lb, ub):
-        r = A @ x_lsq - b
+        r = A.dot(x_lsq) - b
         cost = 0.5 * np.dot(r, r)
         termination_status = 3
         termination_message = TERMINATION_MESSAGES[termination_status]
